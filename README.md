@@ -27,7 +27,7 @@
 
 <br/>
 
-## 💜 Sobre
+## Sobre
 
 **Lilacs** é meu quarto wallpaper animado para desktop, nascido de uma música que eu escuto sem parar enquanto programo, *Lilacs*, do **Pastel Ghost**. A ideia foi transformar a sensação dela em imagem, com aquela mistura de dream pop, neon e fita VHS gasta.
 
@@ -37,24 +37,24 @@ E como a música é o ponto de partida, o wallpaper também mostra **o que você
 
 Existem duas versões com o mesmo código, uma para o **Wallpaper Engine** (Steam) e outra para o **Lively Wallpaper** (Microsoft Store, gratuito).
 
-## ✨ Recursos
+## Recursos
 
 | | |
 |---|---|
-| 🎨 **Fundo de quatro cores** | rosa, lilás, azul e ciano girando em volta do centro, todas personalizáveis |
-| 👻 **Fantasmas espelhados** | quatro silhuetas desfocadas da personagem, uma para cada cor, em profundidades diferentes |
-| 🌈 **Halo de luz RGB** | cópias vermelha, verde e azul atrás dela que abrem e fecham num pulso contínuo |
-| 🔴🔵 **Aberração cromática** | franjas rosa e ciano nas bordas da personagem |
-| ⚡ **Glitch procedural** | a imagem se fatia em faixas por uma fração de segundo, em intervalos aleatórios |
-| 🎧 **Tocando agora** | capa, música, banda e progresso de qualquer player do controle de mídia do Windows |
-| 🎤 **Letra sincronizada** | a letra rola sozinha e destaca a linha atual no tempo da música |
-| ✨ **Partículas e feixes de luz** | brilhos subindo devagar e dois holofotes balançando |
-| 📼 **Estética VHS** | granulação animada, scanlines e vinheta |
-| 🖱️ **Parallax** | as camadas reagem ao mouse em profundidades diferentes |
-| ⏰ **Relógio e data** | em tempo real, com sombra cromática |
-| ⚡ **Leve** | silhuetas pré-renderizadas uma vez só e loop limitado a 30 fps |
+| **Fundo de quatro cores** | rosa, lilás, azul e ciano girando em volta do centro, todas personalizáveis |
+| **Fantasmas espelhados** | quatro silhuetas desfocadas da personagem, uma para cada cor, em profundidades diferentes |
+| **Halo de luz RGB** | cópias vermelha, verde e azul atrás dela que abrem e fecham num pulso contínuo |
+| **Aberração cromática** | franjas rosa e ciano nas bordas da personagem |
+| **Glitch procedural** | a imagem se fatia em faixas por uma fração de segundo, em intervalos aleatórios |
+| **Tocando agora** | capa, música, banda e progresso de qualquer player do controle de mídia do Windows |
+| **Letra sincronizada** | a letra rola sozinha e destaca a linha atual no tempo da música |
+| **Partículas e feixes de luz** | brilhos subindo devagar e dois holofotes balançando |
+| **Estética VHS** | granulação animada, scanlines e vinheta |
+| **Parallax** | as camadas reagem ao mouse em profundidades diferentes |
+| **Relógio e data** | em tempo real, com sombra cromática |
+| **Leve** | silhuetas pré-renderizadas uma vez só e loop limitado a 30 fps |
 
-## 📥 Instalação
+## Instalação
 
 Baixe o arquivo da sua plataforma na página de [releases](https://github.com/EduardoHolkem/Lilacs-Wallpaper/releases/latest).
 
@@ -78,7 +78,7 @@ Baixe o arquivo da sua plataforma na página de [releases](https://github.com/Ed
 
 </details>
 
-## 🎧 Música e letra
+## Música e letra
 
 O wallpaper lê a música pelo controle de mídia do Windows, então funciona com o **Spotify** de desktop, o **YouTube Music** no Chrome ou no Edge e qualquer outro player que apareça ali.
 
@@ -87,7 +87,7 @@ A letra não vem junto com o wallpaper. Quando a faixa muda, ele busca a letra s
 > [!NOTE]
 > O Wallpaper Engine informa a posição exata da música quando o player permite (o Spotify permite). O Lively informa só a troca de faixa, então lá a letra começa a contar quando a música muda. Se ela ficar adiantada ou atrasada, use a opção **Ajuste da letra**.
 
-## ⚙️ Opções
+## Opções
 
 | Opção | Padrão | O que faz |
 |---|---|---|
@@ -102,7 +102,7 @@ A letra não vem junto com o wallpaper. Quando a faixa muda, ele busca a letra s
 | Posição da caixa | inferior esquerdo | também pode ir para a direita ou para cima |
 | Ajuste da letra | 0 s | adianta ou atrasa a letra em até 5 segundos |
 
-## 🗂️ Estrutura
+## Estrutura
 
 ```
 Lilacs-Wallpaper
@@ -122,7 +122,7 @@ node build.js zip
 
 Isso atualiza as duas versões e a demo, e gera os zips em `dist/`.
 
-## 🖤 Créditos
+## Créditos
 
 Feito por **[Eduardo Holkem](https://github.com/EduardoHolkem)** com HTML, CSS e JavaScript puro.
 
@@ -130,5 +130,5 @@ Este é um projeto de fã, sem ligação oficial com o Pastel Ghost. Música, no
 
 <div align="center">
 <br/>
-<sub>se esse wallpaper combinou com o seu setup, deixa uma ⭐</sub>
+<sub>se esse wallpaper combinou com o seu setup, deixa uma estrela.</sub>
 </div>
