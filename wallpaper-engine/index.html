@@ -1,0 +1,811 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Wallpaper-Lilacs</title>
+  <style>
+    *{box-sizing:border-box;margin:0;padding:0}
+    html,body{height:100%}
+    body{
+      width:100vw;height:100vh;overflow:hidden;
+      background:#0b0616;color:#fff;
+      font-family:"Segoe UI",Inter,Arial,sans-serif;
+    }
+    .wallpaper{position:relative;width:100%;height:100%;overflow:hidden}
+
+    /* Fundo: 4 cores desenhadas em baixa resolução e ampliadas (desfoque natural e barato) */
+    #bg-canvas{
+      position:absolute;inset:0;width:100%;height:100%;
+      z-index:1;
+      filter:blur(18px) saturate(1.15);
+      transform:scale(1.08);
+    }
+
+    /* Feixes de luz vindos do topo */
+    .beam{
+      position:absolute;top:-20%;
+      width:34vw;height:140%;
+      z-index:2;pointer-events:none;
+      mix-blend-mode:screen;
+      filter:blur(30px);
+      opacity:.32;
+      transform-origin:50% 0;
+    }
+    .beam.left{left:8%;background:linear-gradient(180deg,var(--beam-a) 0%,transparent 75%);
+      clip-path:polygon(42% 0,58% 0,100% 100%,0 100%);animation:sway-l 13s ease-in-out infinite}
+    .beam.right{right:8%;background:linear-gradient(180deg,var(--beam-b) 0%,transparent 75%);
+      clip-path:polygon(42% 0,58% 0,100% 100%,0 100%);animation:sway-r 17s ease-in-out infinite}
+    @keyframes sway-l{0%,100%{transform:rotate(-16deg)}50%{transform:rotate(4deg)}}
+    @keyframes sway-r{0%,100%{transform:rotate(16deg)}50%{transform:rotate(-5deg)}}
+
+    /* Fantasmas espelhados + halo RGB + partículas de luz */
+    #fx-canvas{position:absolute;inset:0;width:100%;height:100%;z-index:3;mix-blend-mode:screen;pointer-events:none}
+    /* Personagem */
+    #person-canvas{position:absolute;inset:0;width:100%;height:100%;z-index:5;pointer-events:none}
+
+    .vignette{
+      position:absolute;inset:0;z-index:7;pointer-events:none;
+      background:radial-gradient(ellipse at center,rgba(0,0,0,0) 45%,rgba(5,0,15,.55) 100%);
+    }
+    .scanlines{
+      position:absolute;inset:0;z-index:8;pointer-events:none;opacity:.05;
+      background:repeating-linear-gradient(180deg,#000 0 1px,transparent 1px 3px);
+    }
+    .grain{
+      position:absolute;inset:-2px;z-index:9;pointer-events:none;
+      mix-blend-mode:overlay;opacity:.25;
+      background-size:220px 220px;
+    }
+
+    .clock{
+      position:absolute;top:18px;left:18px;z-index:12;color:#fff;
+      text-shadow:-1.5px 0 rgba(255,60,170,.75),1.5px 0 rgba(60,230,255,.75),0 0 14px rgba(150,90,255,.6);
+    }
+    .clock .time{font-size:24px;font-weight:300;letter-spacing:2px}
+    .clock .date{font-size:11px;opacity:.85;margin-top:4px;letter-spacing:1px;text-transform:lowercase}
+    .song{
+      position:absolute;left:18px;bottom:18px;z-index:12;
+      display:flex;align-items:center;gap:10px;
+      font-size:11px;letter-spacing:3px;text-transform:lowercase;color:rgba(255,255,255,.85);
+      text-shadow:0 0 10px rgba(160,90,255,.8);
+    }
+    .song .bars{display:flex;gap:2px;align-items:flex-end;height:12px}
+    .song .bars i{display:block;width:2px;background:currentColor;animation:eq 1.2s ease-in-out infinite}
+    .song .bars i:nth-child(2){animation-delay:-.4s}
+    .song .bars i:nth-child(3){animation-delay:-.8s}
+    .song .bars i:nth-child(4){animation-delay:-.2s}
+    @keyframes eq{0%,100%{height:3px}50%{height:12px}}
+    .hidden{display:none !important}
+
+    /* ===== Caixa "tocando agora" (Spotify / YouTube Music via Wallpaper Engine) ===== */
+    .player{
+      --accent:#9b5cff;
+      /* 1u = 1px numa tela de 1280px de largura; cresce junto com a resolução */
+      --u:clamp(.9px,.078125vw,2px);
+      position:absolute;z-index:13;
+      width:calc(222*var(--u));height:calc(243*var(--u));
+      display:flex;flex-direction:column;
+      padding:calc(12*var(--u));border-radius:calc(14*var(--u));
+      background:linear-gradient(135deg,rgba(20,10,40,.55),rgba(10,5,25,.35));
+      border:1px solid rgba(255,255,255,.12);
+      box-shadow:0 0 0 1px rgba(0,0,0,.2),0 10px 40px rgba(0,0,0,.45),0 0 38px -8px var(--accent);
+      backdrop-filter:blur(14px) saturate(1.3);-webkit-backdrop-filter:blur(14px) saturate(1.3);
+      color:#fff;opacity:0;transform:translateY(14px);pointer-events:none;
+      transition:opacity .6s ease,transform .6s ease,box-shadow 1.2s ease;
+    }
+    .player.show{opacity:1;transform:none}
+    .player.pos-bl{left:calc(6*var(--u));bottom:calc(6*var(--u))}
+    .player.pos-br{right:calc(6*var(--u));bottom:calc(6*var(--u))}
+    .player.pos-tr{right:calc(6*var(--u));top:calc(6*var(--u))}
+    .player .head{display:flex;gap:calc(10*var(--u));align-items:center;flex:none}
+    .player .cover{
+      position:relative;overflow:hidden;isolation:isolate;
+      width:calc(52*var(--u));height:calc(52*var(--u));border-radius:calc(9*var(--u));flex:none;
+      background:linear-gradient(135deg,#ff3fb4,#9b5cff,#2e6bff,#2ff3e0);
+      box-shadow:0 0 18px -2px var(--accent);
+    }
+    /* a foto é maior que a moldura: as bordas (às vezes com linhas brancas) ficam escondidas */
+    .player .cover img{
+      position:absolute;left:50%;top:50%;width:112%;height:112%;
+      transform:translate(-50%,-50%);object-fit:cover;display:block;border:0;
+    }
+    .player .cover img:not([src]){display:none}
+    .player.paused .cover{filter:grayscale(.5) brightness(.8)}
+    .player .meta{min-width:0;flex:1}
+    .player .title{font-size:calc(13*var(--u));font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+      text-shadow:-1px 0 rgba(255,60,170,.6),1px 0 rgba(60,230,255,.6)}
+    .player .artist{font-size:calc(10.5*var(--u));opacity:.75;margin-top:calc(2*var(--u));white-space:nowrap;overflow:hidden;text-overflow:ellipsis;letter-spacing:.5px}
+    .player .bar{margin-top:calc(10*var(--u));height:calc(3*var(--u));border-radius:3px;background:rgba(255,255,255,.14);overflow:hidden;flex:none}
+    .player .bar i{display:block;height:100%;width:0;border-radius:3px;
+      background:linear-gradient(90deg,#ff3fb4,#9b5cff,#2e6bff,#2ff3e0)}
+    .player .times{display:flex;justify-content:space-between;font-size:calc(8.5*var(--u));opacity:.55;margin-top:calc(3*var(--u));letter-spacing:1px;flex:none}
+    .player .state{position:absolute;top:calc(10*var(--u));right:calc(10*var(--u));width:calc(7*var(--u));height:calc(7*var(--u));border-radius:50%;background:#2ff3e0;box-shadow:0 0 8px #2ff3e0}
+    .player.paused .state{background:#888;box-shadow:none}
+
+    .lyrics{margin-top:calc(10*var(--u));position:relative;flex:1;min-height:0;overflow:hidden;
+      -webkit-mask-image:linear-gradient(180deg,transparent 0,#000 12%,#000 80%,transparent 100%);
+              mask-image:linear-gradient(180deg,transparent 0,#000 12%,#000 80%,transparent 100%)}
+    /* lista com a letra inteira que rola sozinha, deixando a linha atual perto do topo */
+    .lyrics .scroll{position:absolute;left:0;right:0;top:0;padding-right:7%;
+      transition:transform .55s cubic-bezier(.25,.8,.25,1);will-change:transform}
+    .lyrics .line{font-size:calc(13.5*var(--u));line-height:1.3;font-weight:600;
+      margin:0 0 calc(6*var(--u));opacity:.22;transform-origin:0 50%;
+      transition:opacity .45s ease,transform .45s ease,text-shadow .45s ease,filter .45s ease;
+      filter:blur(.3px)}
+    .lyrics .line.n1{opacity:.55;filter:none}
+    .lyrics .line.n2{opacity:.36}
+    .lyrics .line.past{opacity:.3}
+    .lyrics .line.cur{opacity:1;filter:none;transform:scale(1.06);
+      text-shadow:-1px 0 rgba(255,60,170,.75),1px 0 rgba(60,230,255,.75),0 0 16px var(--accent)}
+    .lyrics .line.gap{letter-spacing:5px}
+    .lyrics .note{font-size:calc(10.5*var(--u));opacity:.5;letter-spacing:1px;position:absolute;top:50%;transform:translateY(-50%)}
+  </style>
+</head>
+<body>
+  <div class="wallpaper">
+    <canvas id="bg-canvas"></canvas>
+    <div class="beam left"></div>
+    <div class="beam right"></div>
+    <canvas id="fx-canvas"></canvas>
+    <canvas id="person-canvas"></canvas>
+    <div class="vignette"></div>
+    <div class="scanlines"></div>
+    <div class="grain" id="grain"></div>
+
+    <div class="clock" id="clock">
+      <div class="time"><span id="hour">00</span>:<span id="minute">00</span>:<span id="second">00</span></div>
+      <div class="date"><span id="day">01</span> <span id="month">January</span> <span id="year">1970</span></div>
+    </div>
+    <div class="song" id="song">
+      <span class="bars"><i></i><i></i><i></i><i></i></span>
+      <span>lilacs · pastel ghost</span>
+    </div>
+
+    <div class="player pos-bl" id="player">
+      <div class="head">
+        <div class="cover"><img id="np-cover" alt=""></div>
+        <div class="meta">
+          <div class="title" id="np-title"></div>
+          <div class="artist" id="np-artist"></div>
+          <div class="bar"><i id="np-bar"></i></div>
+          <div class="times"><span id="np-pos">0:00</span><span id="np-dur">0:00</span></div>
+        </div>
+        <span class="state"></span>
+      </div>
+      <div class="lyrics" id="np-lyrics"></div>
+    </div>
+  </div>
+
+  <script>
+  /* ================= Configuração ================= */
+  const CONFIG = {
+    colors: ['#ff3fb4', '#9b5cff', '#2e6bff', '#2ff3e0'], // rosa, lilás, azul, ciano
+    fps: 30,
+    grain: 25,
+    glitch: true,
+    mouse: true
+  };
+  // Área ocupada pela personagem dentro do PNG (500x500)
+  const IMG_SIZE = 500;
+  const FIG = { x0: 85, x1: 412, y0: 82, y1: 500 };
+
+  /* ================= Relógio ================= */
+  const months=["January","February","March","April","May","June","July","August","September","October","November","December"];
+  function updateClock(){
+    const now=new Date();
+    document.getElementById('hour').textContent=String(now.getHours()).padStart(2,'0');
+    document.getElementById('minute').textContent=String(now.getMinutes()).padStart(2,'0');
+    document.getElementById('second').textContent=String(now.getSeconds()).padStart(2,'0');
+    document.getElementById('day').textContent=now.getDate();
+    document.getElementById('month').textContent=months[now.getMonth()];
+    document.getElementById('year').textContent=now.getFullYear();
+  }
+  setInterval(updateClock,1000);updateClock();
+
+  /* ================= Utilidades ================= */
+  const rand=(a,b)=>a+Math.random()*(b-a);
+  function hexToRgb(h){
+    h=h.replace('#','');
+    if(h.length===3)h=h.split('').map(c=>c+c).join('');
+    const n=parseInt(h,16);return [(n>>16)&255,(n>>8)&255,n&255];
+  }
+  const rgba=(hex,a)=>{const [r,g,b]=hexToRgb(hex);return `rgba(${r},${g},${b},${a})`;};
+  function weColorToHex(v){
+    const p=v.split(' ').map(x=>Math.round(Math.max(0,Math.min(1,parseFloat(x)))*255));
+    return '#'+p.map(x=>x.toString(16).padStart(2,'0')).join('');
+  }
+  function makeCanvas(w,h){const c=document.createElement('canvas');c.width=Math.max(1,Math.ceil(w));c.height=Math.max(1,Math.ceil(h));return c;}
+
+  /* ================= Elementos ================= */
+  const bgCanvas=document.getElementById('bg-canvas'), bg=bgCanvas.getContext('2d');
+  const fxCanvas=document.getElementById('fx-canvas'), fx=fxCanvas.getContext('2d');
+  const pCanvas=document.getElementById('person-canvas'), pc=pCanvas.getContext('2d');
+  const img=new Image();
+  img.src='Lilacs.png';
+
+  let W=0,H=0,DPR=1,S=0,PX=0,PY=0;      // S = tamanho desenhado do PNG; PX/PY = canto superior esquerdo
+  let ghosts=[], halo=[], fringe=[], sprites=[];
+  let motes=[];
+
+  /* Silhueta tingida (com ou sem desfoque), recortada pelo alfa da personagem */
+  function tinted(color,size,blur){
+    const pad=Math.ceil(blur*2.5);
+    const t=makeCanvas(size,size), tc=t.getContext('2d');
+    tc.imageSmoothingQuality='high';
+    tc.drawImage(img,0,0,size,size);
+    tc.globalCompositeOperation='source-in';
+    tc.fillStyle=color;tc.fillRect(0,0,size,size);
+    if(!blur)return {c:t,pad:0};
+    const o=makeCanvas(size+pad*2,size+pad*2), oc=o.getContext('2d');
+    oc.filter=`blur(${blur}px)`;
+    oc.drawImage(t,pad,pad);
+    // segunda passada mais leve para um núcleo mais luminoso
+    oc.filter=`blur(${blur*0.45}px)`;oc.globalAlpha=.6;
+    oc.drawImage(t,pad,pad);
+    return {c:o,pad};
+  }
+
+  function glowSprite(color){
+    const s=64,c=makeCanvas(s,s),x=c.getContext('2d');
+    const g=x.createRadialGradient(s/2,s/2,0,s/2,s/2,s/2);
+    g.addColorStop(0,'rgba(255,255,255,1)');
+    g.addColorStop(.22,rgba(color,.9));
+    g.addColorStop(1,rgba(color,0));
+    x.fillStyle=g;x.fillRect(0,0,s,s);return c;
+  }
+
+  /* Monta tudo que depende do tamanho da tela ou das cores */
+  function build(){
+    if(!img.complete||!img.naturalWidth)return;
+    const C=CONFIG.colors;
+    S=Math.round(Math.min(H*0.94,W*0.95));
+    PX=Math.round(W/2-S/2);
+    PY=Math.round(H-S+S*0.01);
+
+    // 4 fantasmas espelhados, um para cada cor do fundo
+    const gb=S*0.028;
+    ghosts=[
+      {color:C[0],side:-1,dist:0.50,scale:0.86,flip:false,phase:0.0,speed:0.21,depth:1.6},
+      {color:C[1],side:-1,dist:0.27,scale:0.95,flip:true, phase:1.7,speed:0.17,depth:1.0},
+      {color:C[2],side: 1,dist:0.27,scale:0.95,flip:true, phase:3.1,speed:0.19,depth:1.0},
+      {color:C[3],side: 1,dist:0.50,scale:0.86,flip:false,phase:4.4,speed:0.23,depth:1.6}
+    ].map(g=>{const sz=Math.round(S*g.scale);return Object.assign(g,{size:sz},tinted(g.color,sz,gb*g.scale));});
+
+    // Halo RGB (efeito de luz atrás da personagem)
+    const hb=S*0.014;
+    halo=[
+      Object.assign({off:-1},tinted('#ff2a6d',S,hb)),
+      Object.assign({off: 0},tinted('#2affc6',S,hb*1.4)),
+      Object.assign({off: 1},tinted('#3a5bff',S,hb))
+    ];
+
+    // Franjas de aberração cromática (nítidas)
+    fringe=[tinted('#ff2a8a',S,0),tinted('#22e6ff',S,0)];
+
+    sprites=C.map(glowSprite);
+    motes.forEach(m=>m.sprite=sprites[m.ci]);
+  }
+
+  function resize(){
+    DPR=Math.min(window.devicePixelRatio||1,2);
+    W=Math.round(window.innerWidth*DPR);H=Math.round(window.innerHeight*DPR);
+    fxCanvas.width=pCanvas.width=W;fxCanvas.height=pCanvas.height=H;
+    bgCanvas.width=Math.max(64,Math.round(window.innerWidth/6));
+    bgCanvas.height=Math.max(36,Math.round(window.innerHeight/6));
+    motes=[];
+    for(let i=0;i<55;i++)motes.push(newMote(true));
+    build();
+  }
+
+  /* ================= Partículas de luz ================= */
+  function newMote(anywhere){
+    const ci=Math.floor(Math.random()*4);
+    return {
+      x:Math.random()*W, y:anywhere?Math.random()*H:H+20*DPR,
+      r:rand(4,13)*DPR, vy:rand(6,22)*DPR, sway:rand(8,30)*DPR,
+      ph:Math.random()*Math.PI*2, tw:rand(.6,1.8), ci, sprite:sprites[ci]
+    };
+  }
+
+  /* ================= Granulação (VHS) ================= */
+  const grainEl=document.getElementById('grain');
+  const grainFrames=[];
+  (function makeGrain(){
+    for(let f=0;f<6;f++){
+      const s=220,c=makeCanvas(s,s),x=c.getContext('2d'),d=x.createImageData(s,s);
+      for(let i=0;i<d.data.length;i+=4){const v=Math.random()*255;d.data[i]=d.data[i+1]=d.data[i+2]=v;d.data[i+3]=255;}
+      x.putImageData(d,0,0);grainFrames.push(`url(${c.toDataURL()})`);
+    }
+  })();
+  let grainIdx=0;
+  setInterval(()=>{grainIdx=(grainIdx+1)%grainFrames.length;grainEl.style.backgroundImage=grainFrames[grainIdx];},90);
+
+  /* ================= Mouse (parallax) ================= */
+  let mx=0,my=0,smx=0,smy=0;
+  window.addEventListener('mousemove',e=>{
+    if(!CONFIG.mouse)return;
+    mx=(e.clientX/window.innerWidth)*2-1;my=(e.clientY/window.innerHeight)*2-1;
+  });
+
+  /* ================= Fundo de 4 cores ================= */
+  function drawBackground(t){
+    const w=bgCanvas.width,h=bgCanvas.height,C=CONFIG.colors;
+    bg.globalCompositeOperation='source-over';
+    bg.fillStyle='#06030e';bg.fillRect(0,0,w,h);
+    bg.globalCompositeOperation='screen';
+    const R=Math.max(w,h)*0.5;
+    for(let i=0;i<4;i++){
+      // as 4 cores giram devagar em volta do centro, cada uma ocupando um "quadrante"
+      const a=t*0.035+i*Math.PI/2+Math.sin(t*0.11+i)*0.25;
+      const x=w*(0.5+0.46*Math.cos(a))+smx*w*0.02;
+      const y=h*(0.5+0.46*Math.sin(a))+smy*h*0.02;
+      const r=R*(0.9+0.12*Math.sin(t*0.3+i*1.3));
+      const g=bg.createRadialGradient(x,y,0,x,y,r);
+      g.addColorStop(0,rgba(C[i],.72));
+      g.addColorStop(.45,rgba(C[i],.26));
+      g.addColorStop(1,rgba(C[i],0));
+      bg.fillStyle=g;bg.fillRect(0,0,w,h);
+    }
+    // escurece o centro de baixo para destacar a personagem
+    bg.globalCompositeOperation='source-over';
+    const d=bg.createRadialGradient(w/2,h*0.85,0,w/2,h*0.85,h*0.7);
+    d.addColorStop(0,'rgba(6,3,14,.7)');d.addColorStop(1,'rgba(10,4,24,0)');
+    bg.fillStyle=d;bg.fillRect(0,0,w,h);
+  }
+
+  /* ================= Efeitos (fantasmas + halo + luzes) ================= */
+  function drawFX(t,dt){
+    fx.clearRect(0,0,W,H);
+    if(!ghosts.length)return;
+    fx.globalCompositeOperation='lighter';
+    const cx=W/2;
+
+    // Fantasmas espelhados
+    for(const g of ghosts){
+      const drift=Math.sin(t*g.speed+g.phase)*S*0.025;
+      const bob=Math.sin(t*g.speed*1.3+g.phase*2)*S*0.008;
+      const x=cx+g.side*S*g.dist+drift-smx*S*0.03*g.depth;
+      const y=H-g.size+S*0.02+bob-smy*S*0.01*g.depth;
+      fx.globalAlpha=0.42+0.22*Math.sin(t*0.6+g.phase);
+      fx.save();
+      fx.translate(x,y);
+      if(g.flip)fx.scale(-1,1);
+      fx.drawImage(g.c,-g.size/2-g.pad,-g.pad);
+      fx.restore();
+    }
+
+    // Halo RGB pulsante (a "luz" atrás dela)
+    const pulse=0.5+0.5*Math.sin(t*1.1)*Math.sin(t*0.37);
+    const spread=S*(0.010+0.012*pulse)+(glitchOn?S*0.02:0);
+    for(const h of halo){
+      fx.globalAlpha=h.off===0?0.55+0.25*pulse:0.6;
+      const ox=h.off*spread-smx*S*0.008;
+      const oy=h.off===0?-S*0.006:0;
+      fx.drawImage(h.c,PX-h.pad+ox,PY-h.pad+oy);
+    }
+
+    // Partículas de luz subindo
+    for(const m of motes){
+      m.y-=m.vy*dt;
+      if(m.y<-30*DPR)Object.assign(m,newMote(false));
+      const x=m.x+Math.sin(t*0.5+m.ph)*m.sway-smx*20*DPR;
+      const a=0.25+0.55*(0.5+0.5*Math.sin(t*m.tw+m.ph));
+      fx.globalAlpha=a*Math.min(1,m.y/(H*0.25));
+      const r=m.r*(0.8+0.3*Math.sin(t*m.tw*1.7+m.ph));
+      fx.drawImage(m.sprite,x-r,m.y-r,r*2,r*2);
+    }
+    fx.globalAlpha=1;fx.globalCompositeOperation='source-over';
+  }
+
+  /* ================= Personagem + glitch ================= */
+  let glitchOn=false,glitchEnd=0,nextGlitch=rand(6,12),slices=[],sliceTick=0;
+  function drawPerson(t){
+    pc.clearRect(0,0,W,H);
+    if(!fringe.length)return;
+    const breathe=1+0.008*Math.sin(t*(Math.PI*2/6));
+    const ox=smx*S*0.006, oy=smy*S*0.003;
+    pc.save();
+    pc.translate(PX+S/2+ox,PY+S+oy);
+    pc.scale(breathe,breathe);
+    pc.translate(-S/2,-S);
+    pc.imageSmoothingQuality='high';
+
+    // Aberração cromática: copias vermelha/ciano deslocadas atrás
+    const ab=S*0.0035*(1+0.6*Math.sin(t*2.3))+(glitchOn?S*0.012:0);
+    pc.globalAlpha=.7;
+    pc.drawImage(fringe[0].c,-ab,0);
+    pc.drawImage(fringe[1].c,ab,0);
+    pc.globalAlpha=1;
+
+    if(glitchOn){
+      if(sliceTick++%2===0){
+        slices=[];const n=Math.floor(rand(5,11));let y=FIG.y0;
+        while(y<IMG_SIZE){const h=rand(6,40);slices.push({y,h,dx:Math.random()<.55?rand(-1,1)*S*0.035:0});y+=h;}
+      }
+      const k=S/IMG_SIZE;
+      pc.drawImage(img,0,0,IMG_SIZE,FIG.y0,0,0,S,FIG.y0*k);
+      for(const s of slices){
+        const h=Math.min(s.h,IMG_SIZE-s.y);
+        pc.drawImage(img,0,s.y,IMG_SIZE,h,s.dx,s.y*k,S,h*k);
+      }
+    }else{
+      pc.drawImage(img,0,0,S,S);
+    }
+    pc.restore();
+  }
+
+  function updateGlitch(t){
+    if(!CONFIG.glitch){glitchOn=false;return;}
+    if(!glitchOn&&t>=nextGlitch){glitchOn=true;glitchEnd=t+rand(.12,.32);}
+    if(glitchOn&&t>=glitchEnd){
+      glitchOn=false;
+      // às vezes um glitch duplo
+      nextGlitch=Math.random()<.3?t+rand(.15,.4):t+rand(7,16);
+    }
+  }
+
+  /* ================= Loop (limitado por FPS) ================= */
+  let last=0,prevT=0;
+  function loop(now){
+    requestAnimationFrame(loop);
+    if(now-last<1000/CONFIG.fps-1)return;
+    last=now;
+    const t=now/1000, dt=Math.min(0.1,t-prevT||0);prevT=t;
+    smx+=(mx-smx)*0.05;smy+=(my-smy)*0.05;
+    updateGlitch(t);
+    drawBackground(t);
+    drawFX(t,dt);
+    drawPerson(t);
+  }
+
+  /* ================= Cores aplicadas ao CSS ================= */
+  function applyColors(){
+    const C=CONFIG.colors;
+    document.documentElement.style.setProperty('--beam-a',rgba(C[0],.9));
+    document.documentElement.style.setProperty('--beam-b',rgba(C[3],.9));
+  }
+
+  /* ================= Wallpaper Engine ================= */
+  window.wallpaperPropertyListener={
+    applyUserProperties(p){
+      let rebuild=false;
+      ['color1','color2','color3','color4'].forEach((k,i)=>{
+        if(p[k]){CONFIG.colors[i]=weColorToHex(p[k].value);rebuild=true;}
+      });
+      if(p.showclock)document.getElementById('clock').classList.toggle('hidden',!p.showclock.value);
+      if(p.showsong)document.getElementById('song').classList.toggle('hidden',!p.showsong.value);
+      if(p.grain)grainEl.style.opacity=p.grain.value/100;
+      if(p.glitch)CONFIG.glitch=p.glitch.value;
+      if(p.mouse){CONFIG.mouse=p.mouse.value;if(!CONFIG.mouse){mx=0;my=0;}}
+      if(p.fps)CONFIG.fps=Math.max(10,Math.min(60,p.fps.value));
+      if(rebuild){applyColors();build();}
+      window.__pendingProps=Object.assign(window.__pendingProps||{},p);
+      if(window.applyPlayerProperties)window.applyPlayerProperties(p);
+    }
+  };
+
+  applyColors();
+  window.addEventListener('resize',resize);
+  resize();
+  img.onload=build;
+  if(img.complete)build();
+  requestAnimationFrame(loop);
+  </script>
+
+  <!-- ===================================================================
+       Tocando agora + letra sincronizada
+       A música vem da integração de mídia do Wallpaper Engine (Spotify,
+       YouTube Music no navegador, ou qualquer app que apareça no controle
+       de mídia do Windows). A letra é buscada na hora no LRCLIB.
+       =================================================================== -->
+  <script>
+  (function(){
+    const P={
+      show:true,          // mostrar a caixa
+      lyrics:true,        // mostrar a letra
+      offset:0            // atraso/adiantamento da letra em segundos
+    };
+    const el={
+      box:document.getElementById('player'),
+      cover:document.getElementById('np-cover'),
+      title:document.getElementById('np-title'),
+      artist:document.getElementById('np-artist'),
+      bar:document.getElementById('np-bar'),
+      pos:document.getElementById('np-pos'),
+      dur:document.getElementById('np-dur'),
+      lyrics:document.getElementById('np-lyrics'),
+      song:document.getElementById('song')
+    };
+
+    /* ---------- Estado da música ---------- */
+    const S={
+      enabled:true, title:'', artist:'', album:'', key:'',
+      playing:false, stopped:true,
+      basePos:0, baseTime:performance.now(), duration:0, gotTimeline:false,
+      lines:null, synced:false, instrumental:false, status:'idle', lineIdx:-2
+    };
+
+    function position(){
+      const p=S.playing?S.basePos+(performance.now()-S.baseTime)/1000:S.basePos;
+      return S.duration?Math.min(p,S.duration):p;
+    }
+    function anchor(pos){S.basePos=pos;S.baseTime=performance.now();}
+    const fmt=s=>{s=Math.max(0,Math.floor(s||0));return Math.floor(s/60)+':'+String(s%60).padStart(2,'0');};
+
+    /* ---------- Limpeza do título (YouTube costuma vir com lixo) ---------- */
+    function clean(title,artist){
+      let t=(title||'').trim(), a=(artist||'').trim();
+      a=a.replace(/\s*-\s*Topic$/i,'').replace(/VEVO$/i,'').replace(/\s*\(Official\)$/i,'').trim();
+      t=t.replace(/\s*[\(\[][^\)\]]*(official|video|audio|lyric|letra|visualizer|clipe|mv|hd|4k|remaster)[^\)\]]*[\)\]]/gi,'')
+         .replace(/\s*\|.*$/,'').trim();
+      // vídeo comum do YouTube: "Artista - Música"
+      const m=t.match(/^(.+?)\s+[-–—]\s+(.+)$/);
+      if(m && (!a || m[1].toLowerCase().includes(a.toLowerCase()) || a.toLowerCase().includes(m[1].toLowerCase()))){
+        a=m[1].trim(); t=m[2].trim();
+      }
+      return {title:t, artist:a};
+    }
+
+    /* ---------- LRC ---------- */
+    function parseLRC(text){
+      const out=[];
+      for(const raw of text.split(/\r?\n/)){
+        const tags=[...raw.matchAll(/\[(\d+):(\d+(?:[.:]\d+)?)\]/g)];
+        if(!tags.length)continue;
+        const words=raw.replace(/\[[^\]]*\]/g,'').replace(/<\d+:\d+(?:\.\d+)?>/g,'').trim();
+        for(const tg of tags)out.push({t:parseInt(tg[1],10)*60+parseFloat(tg[2].replace(':','.')),text:words});
+      }
+      return out.sort((a,b)=>a.t-b.t);
+    }
+    // letra sem tempo: espalha as linhas ao longo da música (aproximado)
+    function spreadPlain(text,duration){
+      const ls=text.split(/\r?\n/).map(s=>s.trim()).filter(Boolean);
+      const d=duration||ls.length*4, start=d*0.07, step=(d*0.9-start)/Math.max(1,ls.length);
+      return ls.map((s,i)=>({t:start+i*step,text:s}));
+    }
+
+    /* ---------- Busca no LRCLIB (com cache) ---------- */
+    const API='https://lrclib.net/api/';
+    const memCache={};
+    function cacheGet(k){
+      if(memCache[k])return memCache[k];
+      try{const v=localStorage.getItem('lrc:'+k);if(v)return memCache[k]=JSON.parse(v);}catch(e){}
+      return null;
+    }
+    function cachePut(k,v){memCache[k]=v;try{localStorage.setItem('lrc:'+k,JSON.stringify(v));}catch(e){}}
+
+    async function getJSON(url){
+      const r=await fetch(url);
+      if(r.status===404)return null;
+      if(!r.ok)throw new Error('HTTP '+r.status);
+      return r.json();
+    }
+    function pick(list,duration){
+      if(!Array.isArray(list)||!list.length)return null;
+      const score=x=>(x.syncedLyrics?0:1000)+(duration&&x.duration?Math.abs(x.duration-duration):50);
+      return list.slice().sort((a,b)=>score(a)-score(b))[0];
+    }
+    async function findLyrics(title,artist,album,duration){
+      const q=s=>encodeURIComponent(s);
+      let best=null;
+      if(duration){
+        best=await getJSON(`${API}get?track_name=${q(title)}&artist_name=${q(artist)}&album_name=${q(album||'')}&duration=${Math.round(duration)}`);
+        if(best&&best.syncedLyrics)return best;
+      }
+      const s1=await getJSON(`${API}search?track_name=${q(title)}&artist_name=${q(artist)}`);
+      const p1=pick(s1,duration); if(p1&&p1.syncedLyrics)return p1;
+      const s2=await getJSON(`${API}search?q=${q(artist+' '+title)}`);
+      const p2=pick(s2,duration);
+      return [p2,p1,best].find(x=>x&&x.syncedLyrics)||[p2,p1,best].find(x=>x&&(x.plainLyrics||x.instrumental))||null;
+    }
+
+    let reqId=0, waitTimer=0;
+    function loadLyrics(){
+      const id=++reqId;
+      S.lines=null;S.synced=false;S.instrumental=false;S.lineIdx=-2;
+      if(!S.title){S.status='idle';renderLyrics(true);return;}
+      const key=(S.artist+'|'+S.title).toLowerCase();
+      const cached=cacheGet(key);
+      if(cached){applyLyrics(cached);return;}
+      S.status='loading';renderLyrics(true);
+      // espera um pouco pela duração (ajuda a achar a versão certa)
+      clearTimeout(waitTimer);
+      waitTimer=setTimeout(async()=>{
+        try{
+          const r=await findLyrics(S.title,S.artist,S.album,S.duration);
+          if(id!==reqId)return;
+          const data=r?{synced:r.syncedLyrics||'',plain:r.plainLyrics||'',instrumental:!!r.instrumental}:{none:true};
+          cachePut(key,data);applyLyrics(data);
+        }catch(e){
+          if(id!==reqId)return;
+          S.status='error';renderLyrics(true);
+          setTimeout(()=>{if(id===reqId)loadLyrics();},30000); // tenta de novo (sem internet, limite etc.)
+        }
+      },S.gotTimeline?150:900);
+    }
+    function applyLyrics(d){
+      if(d.instrumental){S.instrumental=true;S.status='instrumental';}
+      else if(d.synced){S.lines=parseLRC(d.synced);S.synced=true;S.status=S.lines.length?'ok':'none';}
+      else if(d.plain){S.lines=spreadPlain(d.plain,S.duration);S.status='ok';}
+      else S.status='none';
+      S.lineIdx=-2;renderLyrics(true);
+    }
+
+    /* ---------- Desenho da letra ---------- */
+    function lineAt(t){
+      const L=S.lines;if(!L||!L.length)return -1;
+      let lo=0,hi=L.length-1,ans=-1;
+      while(lo<=hi){const m=(lo+hi)>>1;if(L[m].t<=t){ans=m;lo=m+1;}else hi=m-1;}
+      return ans;
+    }
+    function div(cls,text){const d=document.createElement('div');d.className=cls;d.textContent=text;return d;}
+    let listEl=null, lineEls=[], builtFor=null;
+    function buildList(){
+      listEl=document.createElement('div');listEl.className='scroll';
+      lineEls=S.lines.map(l=>{
+        const gap=!l.text;
+        const d=div('line'+(gap?' gap':''),gap?'♪ ♪ ♪':l.text);
+        listEl.append(d);return d;
+      });
+      el.lyrics.replaceChildren(listEl);
+      builtFor=S.lines;
+    }
+    function renderLyrics(force){
+      const box=el.lyrics;
+      box.classList.toggle('hidden',!P.lyrics);
+      if(!P.lyrics)return;
+      if(S.status!=='ok'){
+        if(!force)return;
+        builtFor=null;
+        const msg={idle:'',loading:'procurando a letra…',none:'letra não encontrada',
+                   error:'sem conexão com o servidor de letras',instrumental:'♪  instrumental  ♪'}[S.status]||'';
+        box.replaceChildren(div('note',msg));
+        return;
+      }
+      if(builtFor!==S.lines){buildList();force=true;}
+      const t=position()+P.offset+(S.synced?0.15:0);
+      const i=lineAt(t);
+      if(i===S.lineIdx&&!force)return;
+      S.lineIdx=i;
+      // classes por distância da linha atual
+      const focus=Math.max(i,0);
+      lineEls.forEach((d,k)=>{
+        const dist=k-i;
+        d.className='line'+(S.lines[k].text?'':' gap')+
+          (dist===0?' cur':dist===1?' n1':dist===2?' n2':dist<0?' past':'');
+      });
+      // rola a lista deixando a linha atual a ~22% do topo da área
+      const target=lineEls[focus];
+      if(target){
+        const y=target.offsetTop-box.clientHeight*0.22;
+        listEl.style.transform=`translateY(${-Math.max(0,y)}px)`;
+      }
+    }
+    // ao mudar o tamanho da tela, recalcula a rolagem
+    window.addEventListener('resize',()=>{S.lineIdx=-2;});
+
+    /* ---------- Visibilidade ---------- */
+    function updateVisibility(){
+      const has=S.enabled&&!!S.title&&!S.stopped;
+      el.box.classList.toggle('show',P.show&&has);
+      el.box.classList.toggle('paused',!S.playing);
+      // a etiqueta fixa "lilacs · pastel ghost" some enquanto a caixa estiver aparecendo
+      el.song.style.visibility=(P.show&&has&&el.box.classList.contains('pos-bl'))?'hidden':'';
+    }
+
+    /* ---------- Loop leve (4x por segundo + troca de linha precisa) ---------- */
+    function tick(){
+      const p=position();
+      el.pos.textContent=fmt(p);
+      el.dur.textContent=S.duration?fmt(S.duration):'--:--';
+      el.bar.style.width=S.duration?(p/S.duration*100).toFixed(2)+'%':'0%';
+      renderLyrics(false);
+    }
+    setInterval(tick,100);
+
+    /* ---------- Cores vindas do Wallpaper Engine ---------- */
+    function toCss(c){
+      if(!c)return null;
+      if(/^[\d.]+\s+[\d.]+\s+[\d.]+$/.test(c.trim())){
+        const v=c.trim().split(/\s+/).map(Number);const k=v.some(x=>x>1)?1:255;
+        return `rgb(${v.map(x=>Math.round(x*k)).join(',')})`;
+      }
+      return c;
+    }
+
+    /* ---------- Listeners da integração de mídia ---------- */
+    function onStatus(e){S.enabled=!!e.enabled;updateVisibility();}
+    function onProps(e){
+      const c=clean(e.title,e.artist||e.albumArtist);
+      const key=(c.artist+'|'+c.title).toLowerCase();
+      if(key===S.key)return;
+      S.key=key;S.title=c.title;S.artist=c.artist;S.album=e.albumTitle||'';
+      el.title.textContent=c.title;
+      el.artist.textContent=c.artist;
+      S.gotTimeline=false;S.duration=0;anchor(0); // sem timeline, conta a partir de agora
+      if(S.stopped&&c.title){S.stopped=false;}
+      updateVisibility();
+      loadLyrics();
+    }
+    function onThumb(e){
+      if(e.thumbnail){el.cover.src=e.thumbnail;}
+      else el.cover.removeAttribute('src');
+      const acc=toCss(e.primaryColor)||toCss(e.secondaryColor);
+      if(acc)el.box.style.setProperty('--accent',acc);
+    }
+    function onPlayback(e){
+      const MI=window.wallpaperMediaIntegration||{};
+      const PLAY=MI.PLAYBACK_PLAYING!==undefined?MI.PLAYBACK_PLAYING:1;
+      const STOP=MI.PLAYBACK_STOPPED!==undefined?MI.PLAYBACK_STOPPED:0;
+      const pos=position();
+      S.playing=e.state===PLAY;
+      S.stopped=e.state===STOP;
+      anchor(pos);
+      updateVisibility();
+    }
+    function onTimeline(e){
+      const first=!S.gotTimeline;
+      S.gotTimeline=true;
+      if(e.duration)S.duration=e.duration;
+      anchor(e.position||0);
+      if(first&&S.status==='loading')loadLyrics(); // agora com a duração exata
+      else if(first&&S.lines&&!S.synced){const d=cacheGet((S.artist+'|'+S.title).toLowerCase());if(d)applyLyrics(d);}
+      renderLyrics(true);
+    }
+
+    if(window.wallpaperRegisterMediaStatusListener){
+      window.wallpaperRegisterMediaStatusListener(onStatus);
+      window.wallpaperRegisterMediaPropertiesListener(onProps);
+      window.wallpaperRegisterMediaThumbnailListener(onThumb);
+      window.wallpaperRegisterMediaPlaybackListener(onPlayback);
+      window.wallpaperRegisterMediaTimelineListener(onTimeline);
+    }
+    // usado só para testar fora do Wallpaper Engine (e pela demo do GitHub Pages)
+    window.__media={onStatus,onProps,onThumb,onPlayback,onTimeline,state:S,
+      seed:(artist,title,data)=>cachePut((artist+'|'+title).toLowerCase(),data)};
+
+    /* ---------- Lively Wallpaper ----------
+       Precisa de "Arguments": "--system-nowplaying" no LivelyInfo.json.
+       O Lively manda um JSON (ou null quando nada toca). Ele não informa a
+       posição da música, então a letra conta a partir da troca de faixa. */
+    window.livelyCurrentTrack=function(data){
+      let o=null;
+      try{o=typeof data==='string'?JSON.parse(data):data;}catch(e){o=null;}
+      if(!o||!o.Title){onPlayback({state:0});onProps({title:'',artist:''});return;}
+      onProps({title:o.Title,artist:o.Artist||o.AlbumArtist||'',albumTitle:o.AlbumTitle||''});
+      if(o.Thumbnail){
+        onThumb({thumbnail:o.Thumbnail.startsWith('data:')?o.Thumbnail:'data:image/png;base64,'+o.Thumbnail});
+      }
+      if(!S.playing)onPlayback({state:1});
+    };
+
+    /* ---------- Propriedades do usuário ---------- */
+    window.applyPlayerProperties=function(p){
+      if(p.showplayer){P.show=p.showplayer.value;updateVisibility();}
+      if(p.showlyrics){P.lyrics=p.showlyrics.value;renderLyrics(true);}
+      if(p.lyricsoffset){P.offset=Number(p.lyricsoffset.value)||0;S.lineIdx=-2;}
+      if(p.boxposition){
+        el.box.classList.remove('pos-bl','pos-br','pos-tr');
+        el.box.classList.add('pos-'+p.boxposition.value);
+        updateVisibility();
+      }
+    };
+    if(window.__pendingProps)window.applyPlayerProperties(window.__pendingProps);
+
+    /* Lively chama livelyPropertyListener(nome, valor) para cada opção do
+       LivelyProperties.json. Aqui o valor é convertido para o formato do
+       Wallpaper Engine e reaproveita o mesmo código. */
+    const BOX=['bl','br','tr'];
+    window.livelyPropertyListener=function(name,val){
+      if(/^color[1-4]$/.test(name)&&typeof val==='string'){
+        const n=parseInt(val.replace('#',''),16);
+        val=[(n>>16)&255,(n>>8)&255,n&255].map(x=>(x/255).toFixed(4)).join(' ');
+      }
+      if(name==='boxposition'&&typeof val==='number')val=BOX[val]||'bl';
+      window.wallpaperPropertyListener.applyUserProperties({[name]:{value:val}});
+    };
+  })();
+  </script>
+</body>
+</html>
