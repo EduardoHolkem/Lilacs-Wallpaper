@@ -62,9 +62,15 @@
       background:linear-gradient(135deg,rgba(20,10,40,.8),rgba(10,5,25,.68));
       border:1px solid rgba(255,255,255,.12);
       box-shadow:0 0 0 1px rgba(0,0,0,.2),0 10px 40px rgba(0,0,0,.45),0 0 38px -8px var(--accent);
-      color:#fff;opacity:0;transform:translateY(14px);pointer-events:none;
-      transition:opacity .6s ease,transform .6s ease,box-shadow 1.2s ease;
+      color:#fff;opacity:0;transform:translateY(14px);pointer-events:none;overflow:hidden;
+      transition:opacity .6s ease,transform .6s ease,box-shadow 1.2s ease,
+                 height .7s cubic-bezier(.3,.8,.25,1);
     }
+    /* Sem letra (ou depois que a letra acaba) a caixa encolhe até ficar só
+       capa, música e banda. Ela cresce e encolhe a partir do canto preso. */
+    .player.compact{height:var(--compact-h,calc(92*var(--u)))}
+    .player .lyrics{transition:opacity .45s ease .2s}
+    .player.compact .lyrics{opacity:0;transition-delay:0s}
     /* vidro fosco só na qualidade alta: ele refaz o desfoque a cada quadro */
     .q-high .player{
       background:linear-gradient(135deg,rgba(20,10,40,.55),rgba(10,5,25,.35));
@@ -128,7 +134,7 @@
       <div class="date" id="clock-date"></div>
     </div>
 
-    <div class="player pos-bl" id="player">
+    <div class="player pos-bl compact" id="player">
       <div class="head">
         <div class="cover"><img id="np-cover" alt=""></div>
         <div class="meta">
@@ -746,10 +752,12 @@
         d.className='line'+(S.lines[k].text?'':' gap')+
           (dist===0?' cur':dist===1?' n1':dist===2?' n2':dist<0?' past':'');
       });
-      // rola a lista deixando a linha atual a ~22% do topo da área
+      // rola a lista deixando a linha atual a ~22% do topo da área. A altura usada
+      // é a da caixa aberta (157u), para a rolagem já estar certa enquanto ela cresce.
       const target=lineEls[focus];
       if(target){
-        const y=target.offsetTop-box.clientHeight*0.22;
+        const u=el.box.offsetWidth/222;
+        const y=target.offsetTop-(157*u-2)*0.22;
         listEl.style.transform=`translateY(${-Math.max(0,y)}px)`;
       }
     }
@@ -770,12 +778,33 @@
       el.box.classList.toggle('paused',!S.playing);
     }
 
+    /* ---------- Tamanho da caixa ---------- */
+    // A caixa só cresce enquanto existe letra para mostrar. Sem letra, com a
+    // letra desligada ou alguns segundos depois da última linha, ela encolhe.
+    const LYRICS_HOLD=5;
+    function lyricsActive(){
+      if(!P.lyrics||S.status!=='ok'||!S.lines||!S.lines.length)return false;
+      const last=S.lines[S.lines.length-1].t;
+      return position()+P.offset<=last+LYRICS_HOLD;
+    }
+    // altura compacta = topo (capa, nome, banda e barra) + as bordas internas,
+    // medida de verdade porque depende da fonte e da resolução
+    const head=el.box.querySelector('.head');
+    let compactH='';
+    function updateSize(){
+      const u=el.box.offsetWidth/222;
+      const ch=Math.ceil(head.offsetHeight+24*u+2)+'px';
+      if(ch!==compactH){compactH=ch;el.box.style.setProperty('--compact-h',ch);}
+      el.box.classList.toggle('compact',!lyricsActive());
+    }
+
     /* ---------- Loop leve (4x por segundo + troca de linha precisa) ---------- */
     function tick(){
       const p=position();
       el.pos.textContent=fmt(p);
       el.dur.textContent=S.duration?fmt(S.duration):'--:--';
       el.bar.style.width=S.duration?(p/S.duration*100).toFixed(2)+'%':'0%';
+      updateSize();
       renderLyrics(false);
     }
     setInterval(tick,100);

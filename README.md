@@ -47,7 +47,7 @@ Existem duas versões com o mesmo código, uma para o **Wallpaper Engine** (Stea
 | **Aberração cromática** | franjas rosa e ciano nas bordas da personagem |
 | **Glitch procedural** | a imagem se fatia em faixas por uma fração de segundo, em intervalos aleatórios |
 | **Tocando agora** | capa, música, banda e progresso de qualquer player do controle de mídia do Windows. A caixa some quando a música pausa ou para |
-| **Letra sincronizada** | a letra rola sozinha e destaca a linha atual no tempo da música |
+| **Letra sincronizada** | a letra rola sozinha e destaca a linha atual no tempo da música. Sem letra, ou quando ela acaba, a caixa encolhe e mostra só capa, música e banda |
 | **Partículas e feixes de luz** | brilhos subindo devagar e dois holofotes balançando |
 | **Estética VHS** | granulação animada, scanlines e vinheta |
 | **Parallax** | as camadas reagem ao mouse em profundidades diferentes |
