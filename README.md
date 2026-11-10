@@ -46,13 +46,14 @@ Existem duas versões com o mesmo código, uma para o **Wallpaper Engine** (Stea
 | **Halo de luz RGB** | cópias vermelha, verde e azul atrás dela que abrem e fecham num pulso contínuo |
 | **Aberração cromática** | franjas rosa e ciano nas bordas da personagem |
 | **Glitch procedural** | a imagem se fatia em faixas por uma fração de segundo, em intervalos aleatórios |
-| **Tocando agora** | capa, música, banda e progresso de qualquer player do controle de mídia do Windows |
+| **Tocando agora** | capa, música, banda e progresso de qualquer player do controle de mídia do Windows. A caixa some quando a música pausa ou para |
 | **Letra sincronizada** | a letra rola sozinha e destaca a linha atual no tempo da música |
 | **Partículas e feixes de luz** | brilhos subindo devagar e dois holofotes balançando |
 | **Estética VHS** | granulação animada, scanlines e vinheta |
 | **Parallax** | as camadas reagem ao mouse em profundidades diferentes |
-| **Relógio e data** | em tempo real, com sombra cromática |
+| **Relógio discreto** | opcional, só hora e dia, sem brilho |
 | **Leve** | efeitos borrados desenhados em resolução menor, personagem desenhada uma vez só e três níveis de qualidade |
+| **Tudo ajustável** | cada efeito pode ser desligado nas configurações do Wallpaper Engine e do Lively |
 
 ## Instalação
 
@@ -93,12 +94,19 @@ A letra não vem junto com o wallpaper. Quando a faixa muda, ele busca a letra s
 |---|---|---|
 | Cor 1 a Cor 4 | rosa, lilás, azul, ciano | cores do fundo e dos fantasmas |
 | Qualidade | equilibrada | alta, equilibrada ou leve. Em PC mais antigo, use a leve |
-| Glitch | ligado | fatiamento rápido da imagem |
-| Parallax com o mouse | ligado | camadas reagem ao cursor |
-| Granulação | 25 | intensidade do ruído VHS |
 | FPS | 30 | limite de quadros por segundo |
-| Mostrar relógio | ligado | relógio e data no topo |
-| Mostrar música tocando | ligado | caixa com capa, música e banda |
+| Glitch na personagem | ligado | fatiamento rápido da imagem |
+| Contorno rosa e ciano | ligado | aberração cromática nas bordas da personagem |
+| Sombras coloridas | ligado | os quatro fantasmas espelhados |
+| Brilho atrás da personagem | ligado | halo de luz RGB pulsando |
+| Holofotes | ligado | os dois feixes de luz vindos do topo |
+| Partículas de luz | ligado | brilhos subindo devagar |
+| Pontilhado e linhas | ligado | granulação e scanlines do efeito VHS |
+| Intensidade do pontilhado | 25 | força da granulação |
+| Cantos escuros | ligado | vinheta nas bordas da tela |
+| Parallax com o mouse | ligado | camadas reagem ao cursor |
+| Mostrar relógio | desligado | hora e dia no canto superior esquerdo |
+| Mostrar música tocando | ligado | caixa com capa, música e banda enquanto a música toca |
 | Mostrar letra sincronizada | ligado | letra dentro da caixa |
 | Posição da caixa | inferior esquerdo | também pode ir para a direita ou para cima |
 | Ajuste da letra | 0 s | adianta ou atrasa a letra em até 5 segundos |
