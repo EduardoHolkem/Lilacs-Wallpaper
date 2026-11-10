@@ -4,8 +4,8 @@
 
 <br/>
 
-<a href="https://eduardoholkem.github.io/Lilacs-Wallpaper/"><img src="https://img.shields.io/badge/ver%20a%20demo-9b5cff?style=for-the-badge&logo=googlechrome&logoColor=white"/></a>
-<a href="https://github.com/EduardoHolkem/Lilacs-Wallpaper/releases/latest"><img src="https://img.shields.io/badge/baixar-ff3fb4?style=for-the-badge&logo=github&logoColor=white"/></a>
+<a href="https://eduardoholkem.github.io/wallpapers/live/lilacs/"><img src="https://img.shields.io/badge/ver%20a%20demo-9b5cff?style=for-the-badge&logo=googlechrome&logoColor=white"/></a>
+<a href="https://github.com/EduardoHolkem/wallpapers/releases/tag/lilacs-v2.0.0"><img src="https://img.shields.io/badge/baixar%20a%202.0.0-ff3fb4?style=for-the-badge&logo=github&logoColor=white"/></a>
 <img src="https://img.shields.io/badge/Wallpaper%20Engine-2e6bff?style=for-the-badge&logo=steam&logoColor=white"/>
 <img src="https://img.shields.io/badge/Lively%20Wallpaper-2ff3e0?style=for-the-badge&logo=windows&logoColor=0d0718"/>
 
@@ -16,6 +16,9 @@
 <img src="https://img.shields.io/badge/licença-MIT-1a1030?style=flat-square"/>
 
 </div>
+
+> [!IMPORTANT]
+> O Lilacs mudou de endereço. Agora ele fica no repositório **[wallpapers](https://github.com/EduardoHolkem/wallpapers/tree/main/lilacs)**, junto com os meus outros wallpapers, e a versão mais nova é a [2.0.0](https://github.com/EduardoHolkem/wallpapers/releases/tag/lilacs-v2.0.0). Todos podem ser vistos rodando ao vivo no [hub](https://eduardoholkem.github.io/wallpapers/). Este repositório continua aqui com a versão 1.1.0, mas não recebe mais atualizações.
 
 <br/>
 
