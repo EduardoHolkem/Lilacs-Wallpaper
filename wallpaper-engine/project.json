@@ -39,23 +39,36 @@
 				"type" : "color",
 				"value" : "0.1843137254901961 0.9529411764705882 0.8784313725490196"
 			},
-			"glitch" :
+			"quality" :
 			{
 				"order" : 5,
+				"text" : "Qualidade (use Leve em PC fraco)",
+				"type" : "combo",
+				"value" : "medium",
+				"options" :
+				[
+					{ "label" : "Alta", "value" : "high" },
+					{ "label" : "Equilibrada", "value" : "medium" },
+					{ "label" : "Leve", "value" : "low" }
+				]
+			},
+			"glitch" :
+			{
+				"order" : 6,
 				"text" : "Glitch",
 				"type" : "bool",
 				"value" : true
 			},
 			"mouse" :
 			{
-				"order" : 6,
+				"order" : 7,
 				"text" : "Parallax com o mouse",
 				"type" : "bool",
 				"value" : true
 			},
 			"grain" :
 			{
-				"order" : 7,
+				"order" : 8,
 				"text" : "Granulação",
 				"type" : "slider",
 				"min" : 0,
@@ -64,7 +77,7 @@
 			},
 			"fps" :
 			{
-				"order" : 8,
+				"order" : 9,
 				"text" : "FPS",
 				"type" : "slider",
 				"min" : 15,
@@ -73,35 +86,35 @@
 			},
 			"showclock" :
 			{
-				"order" : 9,
+				"order" : 10,
 				"text" : "Mostrar relógio",
 				"type" : "bool",
 				"value" : true
 			},
 			"showsong" :
 			{
-				"order" : 10,
+				"order" : 11,
 				"text" : "Mostrar nome da música",
 				"type" : "bool",
 				"value" : true
 			},
 			"showplayer" :
 			{
-				"order" : 11,
+				"order" : 12,
 				"text" : "Mostrar música tocando (Spotify / YouTube Music)",
 				"type" : "bool",
 				"value" : true
 			},
 			"showlyrics" :
 			{
-				"order" : 12,
+				"order" : 13,
 				"text" : "Mostrar letra sincronizada",
 				"type" : "bool",
 				"value" : true
 			},
 			"boxposition" :
 			{
-				"order" : 13,
+				"order" : 14,
 				"text" : "Posição da caixa",
 				"type" : "combo",
 				"value" : "bl",
@@ -114,7 +127,7 @@
 			},
 			"lyricsoffset" :
 			{
-				"order" : 14,
+				"order" : 15,
 				"text" : "Ajuste da letra (segundos)",
 				"type" : "slider",
 				"min" : -5,

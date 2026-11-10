@@ -6,6 +6,7 @@
   "color4": { "text": "Cor 4 (ciano)", "type": "color", "value": "#2FF3E0" },
 
   "labelEfeitos": { "type": "label", "value": "Efeitos" },
+  "quality": { "text": "Qualidade (use Leve em PC fraco)", "type": "dropdown", "value": 1, "items": ["Alta", "Equilibrada", "Leve"] },
   "glitch": { "text": "Glitch", "type": "checkbox", "value": true },
   "mouse": { "text": "Parallax com o mouse", "type": "checkbox", "value": true },
   "grain": { "text": "Granulação", "type": "slider", "min": 0, "max": 100, "step": 1, "value": 25 },

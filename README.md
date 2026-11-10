@@ -52,7 +52,7 @@ Existem duas versões com o mesmo código, uma para o **Wallpaper Engine** (Stea
 | **Estética VHS** | granulação animada, scanlines e vinheta |
 | **Parallax** | as camadas reagem ao mouse em profundidades diferentes |
 | **Relógio e data** | em tempo real, com sombra cromática |
-| **Leve** | silhuetas pré-renderizadas uma vez só e loop limitado a 30 fps |
+| **Leve** | efeitos borrados desenhados em resolução menor, personagem desenhada uma vez só e três níveis de qualidade |
 
 ## Instalação
 
@@ -92,6 +92,7 @@ A letra não vem junto com o wallpaper. Quando a faixa muda, ele busca a letra s
 | Opção | Padrão | O que faz |
 |---|---|---|
 | Cor 1 a Cor 4 | rosa, lilás, azul, ciano | cores do fundo e dos fantasmas |
+| Qualidade | equilibrada | alta, equilibrada ou leve. Em PC mais antigo, use a leve |
 | Glitch | ligado | fatiamento rápido da imagem |
 | Parallax com o mouse | ligado | camadas reagem ao cursor |
 | Granulação | 25 | intensidade do ruído VHS |

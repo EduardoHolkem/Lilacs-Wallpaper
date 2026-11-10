@@ -14,48 +14,27 @@
     }
     .wallpaper{position:relative;width:100%;height:100%;overflow:hidden}
 
-    /* Fundo: 4 cores desenhadas em baixa resolução e ampliadas (desfoque natural e barato) */
-    #bg-canvas{
-      position:absolute;inset:0;width:100%;height:100%;
-      z-index:1;
-      filter:blur(18px) saturate(1.15);
-      transform:scale(1.08);
-    }
+    /* Cena: fundo de 4 cores, feixes, fantasmas, halo, partículas e vinheta.
+       Tudo isso é borrado, então é desenhado numa resolução menor e ampliado. */
+    #scene{position:absolute;inset:0;width:100%;height:100%;z-index:1}
 
-    /* Feixes de luz vindos do topo */
-    .beam{
-      position:absolute;top:-20%;
-      width:34vw;height:140%;
-      z-index:2;pointer-events:none;
-      mix-blend-mode:screen;
-      filter:blur(30px);
-      opacity:.32;
-      transform-origin:50% 0;
-    }
-    .beam.left{left:8%;background:linear-gradient(180deg,var(--beam-a) 0%,transparent 75%);
-      clip-path:polygon(42% 0,58% 0,100% 100%,0 100%);animation:sway-l 13s ease-in-out infinite}
-    .beam.right{right:8%;background:linear-gradient(180deg,var(--beam-b) 0%,transparent 75%);
-      clip-path:polygon(42% 0,58% 0,100% 100%,0 100%);animation:sway-r 17s ease-in-out infinite}
-    @keyframes sway-l{0%,100%{transform:rotate(-16deg)}50%{transform:rotate(4deg)}}
-    @keyframes sway-r{0%,100%{transform:rotate(16deg)}50%{transform:rotate(-5deg)}}
+    /* Personagem: desenhada uma vez só. Respiração e parallax ficam por conta
+       do transform, que a placa de vídeo faz sem repintar nada. */
+    #person-canvas{position:absolute;z-index:5;pointer-events:none;transform-origin:50% 100%;will-change:transform}
 
-    /* Fantasmas espelhados + halo RGB + partículas de luz */
-    #fx-canvas{position:absolute;inset:0;width:100%;height:100%;z-index:3;mix-blend-mode:screen;pointer-events:none}
-    /* Personagem */
-    #person-canvas{position:absolute;inset:0;width:100%;height:100%;z-index:5;pointer-events:none}
-
-    .vignette{
-      position:absolute;inset:0;z-index:7;pointer-events:none;
-      background:radial-gradient(ellipse at center,rgba(0,0,0,0) 45%,rgba(5,0,15,.55) 100%);
-    }
-    .scanlines{
-      position:absolute;inset:0;z-index:8;pointer-events:none;opacity:.05;
-      background:repeating-linear-gradient(180deg,#000 0 1px,transparent 1px 3px);
-    }
+    /* Granulação e scanlines na mesma textura, que só muda de lugar */
     .grain{
-      position:absolute;inset:-2px;z-index:9;pointer-events:none;
-      mix-blend-mode:overlay;opacity:.25;
-      background-size:220px 220px;
+      position:absolute;inset:-240px;z-index:9;pointer-events:none;
+      background-size:240px 240px;will-change:transform;
+      animation:grain .54s steps(1) infinite;
+    }
+    @keyframes grain{
+      0%{transform:translate(0,0)}
+      16.6%{transform:translate(-97px,53px)}
+      33.3%{transform:translate(61px,-118px)}
+      50%{transform:translate(-142px,-31px)}
+      66.6%{transform:translate(113px,88px)}
+      83.3%{transform:translate(-23px,137px)}
     }
 
     .clock{
@@ -87,12 +66,16 @@
       width:calc(222*var(--u));height:calc(243*var(--u));
       display:flex;flex-direction:column;
       padding:calc(12*var(--u));border-radius:calc(14*var(--u));
-      background:linear-gradient(135deg,rgba(20,10,40,.55),rgba(10,5,25,.35));
+      background:linear-gradient(135deg,rgba(20,10,40,.8),rgba(10,5,25,.68));
       border:1px solid rgba(255,255,255,.12);
       box-shadow:0 0 0 1px rgba(0,0,0,.2),0 10px 40px rgba(0,0,0,.45),0 0 38px -8px var(--accent);
-      backdrop-filter:blur(14px) saturate(1.3);-webkit-backdrop-filter:blur(14px) saturate(1.3);
       color:#fff;opacity:0;transform:translateY(14px);pointer-events:none;
       transition:opacity .6s ease,transform .6s ease,box-shadow 1.2s ease;
+    }
+    /* vidro fosco só na qualidade alta: ele refaz o desfoque a cada quadro */
+    .q-high .player{
+      background:linear-gradient(135deg,rgba(20,10,40,.55),rgba(10,5,25,.35));
+      backdrop-filter:blur(14px) saturate(1.3);-webkit-backdrop-filter:blur(14px) saturate(1.3);
     }
     .player.show{opacity:1;transform:none}
     .player.pos-bl{left:calc(6*var(--u));bottom:calc(6*var(--u))}
@@ -131,12 +114,11 @@
       transition:transform .55s cubic-bezier(.25,.8,.25,1);will-change:transform}
     .lyrics .line{font-size:calc(13.5*var(--u));line-height:1.3;font-weight:600;
       margin:0 0 calc(6*var(--u));opacity:.22;transform-origin:0 50%;
-      transition:opacity .45s ease,transform .45s ease,text-shadow .45s ease,filter .45s ease;
-      filter:blur(.3px)}
-    .lyrics .line.n1{opacity:.55;filter:none}
+      transition:opacity .45s ease,transform .45s ease,text-shadow .45s ease}
+    .lyrics .line.n1{opacity:.55}
     .lyrics .line.n2{opacity:.36}
     .lyrics .line.past{opacity:.3}
-    .lyrics .line.cur{opacity:1;filter:none;transform:scale(1.06);
+    .lyrics .line.cur{opacity:1;transform:scale(1.06);
       text-shadow:-1px 0 rgba(255,60,170,.75),1px 0 rgba(60,230,255,.75),0 0 16px var(--accent)}
     .lyrics .line.gap{letter-spacing:5px}
     .lyrics .note{font-size:calc(10.5*var(--u));opacity:.5;letter-spacing:1px;position:absolute;top:50%;transform:translateY(-50%)}
@@ -144,13 +126,8 @@
 </head>
 <body>
   <div class="wallpaper">
-    <canvas id="bg-canvas"></canvas>
-    <div class="beam left"></div>
-    <div class="beam right"></div>
-    <canvas id="fx-canvas"></canvas>
+    <canvas id="scene"></canvas>
     <canvas id="person-canvas"></canvas>
-    <div class="vignette"></div>
-    <div class="scanlines"></div>
     <div class="grain" id="grain"></div>
 
     <div class="clock" id="clock">
@@ -184,7 +161,14 @@
     fps: 30,
     grain: 25,
     glitch: true,
-    mouse: true
+    mouse: true,
+    quality: 'medium'
+  };
+  // scale = resolução da cena em relação à tela; motes = partículas de luz
+  const QUALITY = {
+    high:   { scale: .75, motes: 55 },
+    medium: { scale: .5,  motes: 45 },
+    low:    { scale: .34, motes: 30 }
   };
   // Área ocupada pela personagem dentro do PNG (500x500)
   const IMG_SIZE = 500;
@@ -215,18 +199,31 @@
     const p=v.split(' ').map(x=>Math.round(Math.max(0,Math.min(1,parseFloat(x)))*255));
     return '#'+p.map(x=>x.toString(16).padStart(2,'0')).join('');
   }
+  // mesma conta do filtro CSS saturate(), feita uma vez na cor em vez de na tela toda
+  function saturate(hex,s){
+    const [r,g,b]=hexToRgb(hex);
+    const m=[
+      .213+.787*s,.715-.715*s,.072-.072*s,
+      .213-.213*s,.715+.285*s,.072-.072*s,
+      .213-.213*s,.715-.715*s,.072+.928*s
+    ];
+    const c=i=>Math.round(Math.max(0,Math.min(255,m[i]*r+m[i+1]*g+m[i+2]*b)));
+    return '#'+[c(0),c(3),c(6)].map(x=>x.toString(16).padStart(2,'0')).join('');
+  }
   function makeCanvas(w,h){const c=document.createElement('canvas');c.width=Math.max(1,Math.ceil(w));c.height=Math.max(1,Math.ceil(h));return c;}
 
   /* ================= Elementos ================= */
-  const bgCanvas=document.getElementById('bg-canvas'), bg=bgCanvas.getContext('2d');
-  const fxCanvas=document.getElementById('fx-canvas'), fx=fxCanvas.getContext('2d');
+  const scene=document.getElementById('scene'), sc=scene.getContext('2d');
   const pCanvas=document.getElementById('person-canvas'), pc=pCanvas.getContext('2d');
+  const bgc=makeCanvas(64,36), bg=bgc.getContext('2d');   // fundo em 1/6 da tela
   const img=new Image();
   img.src='Lilacs.png';
 
-  let W=0,H=0,DPR=1,S=0,PX=0,PY=0;      // S = tamanho desenhado do PNG; PX/PY = canto superior esquerdo
-  let ghosts=[], halo=[], fringe=[], sprites=[];
-  let motes=[];
+  let VW=0,VH=0,Q=.5;            // tela em px CSS e escala da cena
+  let W=0,H=0,S=0,PX=0,PY=0;     // na cena: tamanho, PNG desenhado e seu canto superior esquerdo
+  let SC=0,PXc=0,PYc=0,PAD=0,D=1; // personagem em px CSS, margem lateral e densidade de pixels
+  let ghosts=[], halo=[], fringe=[], sprites=[], beams=[], motes=[], vignette=null;
+  let bgColors=CONFIG.colors.slice();
 
   /* Silhueta tingida (com ou sem desfoque), recortada pelo alfa da personagem */
   function tinted(color,size,blur){
@@ -255,13 +252,38 @@
     x.fillStyle=g;x.fillRect(0,0,s,s);return c;
   }
 
+  /* Feixe de luz vindo do topo, já desfocado, na resolução do fundo */
+  function beamSprite(color){
+    const w=bgc.width*0.34, h=bgc.height*1.4, blur=3, pad=blur*3;
+    const t=makeCanvas(w,h), tx=t.getContext('2d');
+    const g=tx.createLinearGradient(0,0,0,h);
+    g.addColorStop(0,rgba(color,.9));g.addColorStop(.75,rgba(color,0));
+    tx.fillStyle=g;
+    tx.beginPath();tx.moveTo(w*.42,0);tx.lineTo(w*.58,0);tx.lineTo(w,h);tx.lineTo(0,h);tx.closePath();tx.fill();
+    const c=makeCanvas(w+pad*2,h+pad*2), x=c.getContext('2d');
+    x.filter=`blur(${blur}px)`;x.drawImage(t,pad,pad);
+    return {c,w,pad};
+  }
+
+  /* Vinheta no tamanho da cena: um círculo esticado vira a elipse da tela */
+  function vignetteSprite(){
+    const s=128,c=makeCanvas(W,H),x=c.getContext('2d');
+    x.scale(W/s,H/s);
+    const g=x.createRadialGradient(s/2,s/2,0,s/2,s/2,s/2*Math.SQRT2);
+    g.addColorStop(.45,'rgba(5,0,15,0)');
+    g.addColorStop(1,'rgba(5,0,15,.55)');
+    x.fillStyle=g;x.fillRect(0,0,s,s);return c;
+  }
+
   /* Monta tudo que depende do tamanho da tela ou das cores */
   function build(){
     if(!img.complete||!img.naturalWidth)return;
     const C=CONFIG.colors;
-    S=Math.round(Math.min(H*0.94,W*0.95));
-    PX=Math.round(W/2-S/2);
-    PY=Math.round(H-S+S*0.01);
+    bgColors=C.map(c=>saturate(c,1.15));
+    SC=Math.round(Math.min(VH*0.94,VW*0.95));
+    PXc=Math.round(VW/2-SC/2);
+    PYc=Math.round(VH-SC+SC*0.01);
+    S=SC*Q;PX=PXc*Q;PY=PYc*Q;
 
     // 4 fantasmas espelhados, um para cada cor do fundo
     const gb=S*0.028;
@@ -270,31 +292,41 @@
       {color:C[1],side:-1,dist:0.27,scale:0.95,flip:true, phase:1.7,speed:0.17,depth:1.0},
       {color:C[2],side: 1,dist:0.27,scale:0.95,flip:true, phase:3.1,speed:0.19,depth:1.0},
       {color:C[3],side: 1,dist:0.50,scale:0.86,flip:false,phase:4.4,speed:0.23,depth:1.6}
-    ].map(g=>{const sz=Math.round(S*g.scale);return Object.assign(g,{size:sz},tinted(g.color,sz,gb*g.scale));});
+    ].map(g=>{
+      const sz=Math.round(S*g.scale), t=tinted(g.color,sz,gb*g.scale);
+      // espelha uma vez aqui; desenhar invertido a cada quadro custa caro
+      if(g.flip){
+        const m=makeCanvas(t.c.width,t.c.height),mc=m.getContext('2d');
+        mc.translate(m.width,0);mc.scale(-1,1);mc.drawImage(t.c,0,0);t.c=m;
+      }
+      return Object.assign(g,{size:sz},t);
+    });
 
     // Halo RGB (efeito de luz atrás da personagem)
-    const hb=S*0.014;
+    const hb=S*0.014, hs=Math.round(S);
     halo=[
-      Object.assign({off:-1},tinted('#ff2a6d',S,hb)),
-      Object.assign({off: 0},tinted('#2affc6',S,hb*1.4)),
-      Object.assign({off: 1},tinted('#3a5bff',S,hb))
+      Object.assign({off:-1},tinted('#ff2a6d',hs,hb)),
+      Object.assign({off: 0},tinted('#2affc6',hs,hb*1.4)),
+      Object.assign({off: 1},tinted('#3a5bff',hs,hb))
     ];
-
-    // Franjas de aberração cromática (nítidas)
-    fringe=[tinted('#ff2a8a',S,0),tinted('#22e6ff',S,0)];
 
     sprites=C.map(glowSprite);
     motes.forEach(m=>m.sprite=sprites[m.ci]);
+    beams=[beamSprite(C[0]),beamSprite(C[3])];
+    buildPerson();
   }
 
   function resize(){
-    DPR=Math.min(window.devicePixelRatio||1,2);
-    W=Math.round(window.innerWidth*DPR);H=Math.round(window.innerHeight*DPR);
-    fxCanvas.width=pCanvas.width=W;fxCanvas.height=pCanvas.height=H;
-    bgCanvas.width=Math.max(64,Math.round(window.innerWidth/6));
-    bgCanvas.height=Math.max(36,Math.round(window.innerHeight/6));
+    VW=window.innerWidth;VH=window.innerHeight;
+    const q=QUALITY[CONFIG.quality]||QUALITY.medium;
+    Q=q.scale;
+    W=scene.width=Math.max(2,Math.round(VW*Q));
+    H=scene.height=Math.max(2,Math.round(VH*Q));
+    bgc.width=Math.max(64,Math.round(VW/6));
+    bgc.height=Math.max(36,Math.round(VH/6));
+    vignette=vignetteSprite();
     motes=[];
-    for(let i=0;i<55;i++)motes.push(newMote(true));
+    for(let i=0;i<q.motes;i++)motes.push(newMote(true));
     build();
   }
 
@@ -302,24 +334,28 @@
   function newMote(anywhere){
     const ci=Math.floor(Math.random()*4);
     return {
-      x:Math.random()*W, y:anywhere?Math.random()*H:H+20*DPR,
-      r:rand(4,13)*DPR, vy:rand(6,22)*DPR, sway:rand(8,30)*DPR,
+      x:Math.random()*W, y:anywhere?Math.random()*H:H+20*Q,
+      r:rand(4,13)*Q, vy:rand(6,22)*Q, sway:rand(8,30)*Q,
       ph:Math.random()*Math.PI*2, tw:rand(.6,1.8), ci, sprite:sprites[ci]
     };
   }
 
-  /* ================= Granulação (VHS) ================= */
+  /* ================= Granulação (VHS) + scanlines ================= */
   const grainEl=document.getElementById('grain');
-  const grainFrames=[];
-  (function makeGrain(){
-    for(let f=0;f<6;f++){
-      const s=220,c=makeCanvas(s,s),x=c.getContext('2d'),d=x.createImageData(s,s);
-      for(let i=0;i<d.data.length;i+=4){const v=Math.random()*255;d.data[i]=d.data[i+1]=d.data[i+2]=v;d.data[i+3]=255;}
-      x.putImageData(d,0,0);grainFrames.push(`url(${c.toDataURL()})`);
+  function makeGrain(amount){
+    // ruído claro e escuro em volta de zero, com uma linha escura a cada 3px
+    const s=240,c=makeCanvas(s,s),x=c.getContext('2d'),d=x.createImageData(s,s),p=d.data;
+    for(let y=0;y<s;y++){
+      const line=y%3===0;
+      for(let i=y*s*4,e=i+s*4;i<e;i+=4){
+        const v=Math.random()*2-1, a=Math.abs(v)*amount*0.32, col=v>0?255:0;
+        if(line){const oa=.05+a*.95;p[i]=p[i+1]=p[i+2]=col*a*.95/oa;p[i+3]=oa*255;}
+        else{p[i]=p[i+1]=p[i+2]=col;p[i+3]=a*255;}
+      }
     }
-  })();
-  let grainIdx=0;
-  setInterval(()=>{grainIdx=(grainIdx+1)%grainFrames.length;grainEl.style.backgroundImage=grainFrames[grainIdx];},90);
+    x.putImageData(d,0,0);
+    grainEl.style.backgroundImage=`url(${c.toDataURL()})`;
+  }
 
   /* ================= Mouse (parallax) ================= */
   let mx=0,my=0,smx=0,smy=0;
@@ -328,9 +364,9 @@
     mx=(e.clientX/window.innerWidth)*2-1;my=(e.clientY/window.innerHeight)*2-1;
   });
 
-  /* ================= Fundo de 4 cores ================= */
+  /* ================= Fundo de 4 cores + feixes ================= */
   function drawBackground(t){
-    const w=bgCanvas.width,h=bgCanvas.height,C=CONFIG.colors;
+    const w=bgc.width,h=bgc.height,C=bgColors;
     bg.globalCompositeOperation='source-over';
     bg.fillStyle='#06030e';bg.fillRect(0,0,w,h);
     bg.globalCompositeOperation='screen';
@@ -342,8 +378,8 @@
       const y=h*(0.5+0.46*Math.sin(a))+smy*h*0.02;
       const r=R*(0.9+0.12*Math.sin(t*0.3+i*1.3));
       const g=bg.createRadialGradient(x,y,0,x,y,r);
-      g.addColorStop(0,rgba(C[i],.72));
-      g.addColorStop(.45,rgba(C[i],.26));
+      g.addColorStop(0,rgba(C[i],.76));
+      g.addColorStop(.45,rgba(C[i],.28));
       g.addColorStop(1,rgba(C[i],0));
       bg.fillStyle=g;bg.fillRect(0,0,w,h);
     }
@@ -352,87 +388,121 @@
     const d=bg.createRadialGradient(w/2,h*0.85,0,w/2,h*0.85,h*0.7);
     d.addColorStop(0,'rgba(6,3,14,.7)');d.addColorStop(1,'rgba(10,4,24,0)');
     bg.fillStyle=d;bg.fillRect(0,0,w,h);
+
+    // feixes balançando a partir do topo
+    if(beams.length){
+      bg.globalCompositeOperation='screen';bg.globalAlpha=.42;
+      const sway=[-6-10*Math.cos(t*Math.PI*2/13), 5.5+10.5*Math.cos(t*Math.PI*2/17)];
+      beams.forEach((b,i)=>{
+        const px=i?w*0.92-b.w/2:w*0.08+b.w/2;
+        bg.save();bg.translate(px,-h*0.2);bg.rotate(sway[i]*Math.PI/180);
+        bg.drawImage(b.c,-b.w/2-b.pad,-b.pad);
+        bg.restore();
+      });
+      bg.globalAlpha=1;bg.globalCompositeOperation='source-over';
+    }
   }
 
-  /* ================= Efeitos (fantasmas + halo + luzes) ================= */
-  function drawFX(t,dt){
-    fx.clearRect(0,0,W,H);
-    if(!ghosts.length)return;
-    fx.globalCompositeOperation='lighter';
-    const cx=W/2;
+  /* ================= Cena (fundo + fantasmas + halo + luzes + vinheta) ================= */
+  function drawScene(t,dt){
+    drawBackground(t);
+    sc.globalCompositeOperation='source-over';sc.globalAlpha=1;
+    sc.drawImage(bgc,0,0,W,H);
 
-    // Fantasmas espelhados
-    for(const g of ghosts){
-      const drift=Math.sin(t*g.speed+g.phase)*S*0.025;
-      const bob=Math.sin(t*g.speed*1.3+g.phase*2)*S*0.008;
-      const x=cx+g.side*S*g.dist+drift-smx*S*0.03*g.depth;
-      const y=H-g.size+S*0.02+bob-smy*S*0.01*g.depth;
-      fx.globalAlpha=0.42+0.22*Math.sin(t*0.6+g.phase);
-      fx.save();
-      fx.translate(x,y);
-      if(g.flip)fx.scale(-1,1);
-      fx.drawImage(g.c,-g.size/2-g.pad,-g.pad);
-      fx.restore();
+    // posições arredondadas: com pixel inteiro a cópia é direta, sem reamostrar
+    const R=Math.round;
+    if(ghosts.length){
+      sc.globalCompositeOperation='screen';
+      const cx=W/2;
+
+      // Fantasmas espelhados
+      for(const g of ghosts){
+        const drift=Math.sin(t*g.speed+g.phase)*S*0.025;
+        const bob=Math.sin(t*g.speed*1.3+g.phase*2)*S*0.008;
+        const x=cx+g.side*S*g.dist+drift-smx*S*0.03*g.depth;
+        const y=H-g.size+S*0.02+bob-smy*S*0.01*g.depth;
+        sc.globalAlpha=0.42+0.22*Math.sin(t*0.6+g.phase);
+        sc.drawImage(g.c,R(x-g.size/2-g.pad),R(y-g.pad));
+      }
+
+      // Halo RGB pulsante (a "luz" atrás dela)
+      const pulse=0.5+0.5*Math.sin(t*1.1)*Math.sin(t*0.37);
+      const spread=S*(0.010+0.012*pulse)+(glitchOn?S*0.02:0);
+      for(const h of halo){
+        sc.globalAlpha=h.off===0?0.55+0.25*pulse:0.6;
+        const ox=h.off*spread-smx*S*0.008;
+        const oy=h.off===0?-S*0.006:0;
+        sc.drawImage(h.c,R(PX-h.pad+ox),R(PY-h.pad+oy));
+      }
+
+      // Partículas de luz subindo
+      for(const m of motes){
+        m.y-=m.vy*dt;
+        if(m.y<-30*Q)Object.assign(m,newMote(false));
+        const x=m.x+Math.sin(t*0.5+m.ph)*m.sway-smx*20*Q;
+        const a=0.25+0.55*(0.5+0.5*Math.sin(t*m.tw+m.ph));
+        sc.globalAlpha=a*Math.min(1,m.y/(H*0.25));
+        const r=m.r*(0.8+0.3*Math.sin(t*m.tw*1.7+m.ph));
+        sc.drawImage(m.sprite,x-r,m.y-r,r*2,r*2);
+      }
     }
 
-    // Halo RGB pulsante (a "luz" atrás dela)
-    const pulse=0.5+0.5*Math.sin(t*1.1)*Math.sin(t*0.37);
-    const spread=S*(0.010+0.012*pulse)+(glitchOn?S*0.02:0);
-    for(const h of halo){
-      fx.globalAlpha=h.off===0?0.55+0.25*pulse:0.6;
-      const ox=h.off*spread-smx*S*0.008;
-      const oy=h.off===0?-S*0.006:0;
-      fx.drawImage(h.c,PX-h.pad+ox,PY-h.pad+oy);
-    }
-
-    // Partículas de luz subindo
-    for(const m of motes){
-      m.y-=m.vy*dt;
-      if(m.y<-30*DPR)Object.assign(m,newMote(false));
-      const x=m.x+Math.sin(t*0.5+m.ph)*m.sway-smx*20*DPR;
-      const a=0.25+0.55*(0.5+0.5*Math.sin(t*m.tw+m.ph));
-      fx.globalAlpha=a*Math.min(1,m.y/(H*0.25));
-      const r=m.r*(0.8+0.3*Math.sin(t*m.tw*1.7+m.ph));
-      fx.drawImage(m.sprite,x-r,m.y-r,r*2,r*2);
-    }
-    fx.globalAlpha=1;fx.globalCompositeOperation='source-over';
+    sc.globalCompositeOperation='source-over';sc.globalAlpha=1;
+    if(vignette)sc.drawImage(vignette,0,0);
   }
 
   /* ================= Personagem + glitch ================= */
-  let glitchOn=false,glitchEnd=0,nextGlitch=rand(6,12),slices=[],sliceTick=0;
-  function drawPerson(t){
-    pc.clearRect(0,0,W,H);
-    if(!fringe.length)return;
-    const breathe=1+0.008*Math.sin(t*(Math.PI*2/6));
-    const ox=smx*S*0.006, oy=smy*S*0.003;
-    pc.save();
-    pc.translate(PX+S/2+ox,PY+S+oy);
-    pc.scale(breathe,breathe);
-    pc.translate(-S/2,-S);
-    pc.imageSmoothingQuality='high';
+  let glitchOn=false,glitchEnd=0,nextGlitch=rand(6,12),slices=[],sliceTick=0,painted=null,personFull=null;
 
-    // Aberração cromática: copias vermelha/ciano deslocadas atrás
-    const ab=S*0.0035*(1+0.6*Math.sin(t*2.3))+(glitchOn?S*0.012:0);
+  function buildPerson(){
+    D=Math.min(window.devicePixelRatio||1,2);
+    PAD=Math.round(SC*0.05);
+    const cw=SC+PAD*2, sd=Math.round(SC*D);
+    pCanvas.width=Math.round(cw*D);pCanvas.height=sd;
+    Object.assign(pCanvas.style,{width:cw+'px',height:SC+'px',left:(PXc-PAD)+'px',top:PYc+'px'});
+    fringe=[tinted('#ff2a8a',sd,0),tinted('#22e6ff',sd,0)];
+    // personagem já no tamanho final: o glitch só copia fatias, sem redimensionar
+    personFull=makeCanvas(sd,sd);
+    const fc=personFull.getContext('2d');
+    fc.imageSmoothingQuality='high';fc.drawImage(img,0,0,sd,sd);
+    paintPerson(false);
+  }
+
+  // Aberração cromática (cópias rosa e ciano deslocadas) + personagem, inteira ou fatiada
+  function paintPerson(glitch){
+    const sd=pCanvas.height, pd=PAD*D;
+    pc.clearRect(0,0,pCanvas.width,pCanvas.height);
+    const ab=Math.round(sd*0.0042+(glitch?sd*0.012:0));
     pc.globalAlpha=.7;
-    pc.drawImage(fringe[0].c,-ab,0);
-    pc.drawImage(fringe[1].c,ab,0);
+    pc.drawImage(fringe[0].c,pd-ab,0);
+    pc.drawImage(fringe[1].c,pd+ab,0);
     pc.globalAlpha=1;
-
-    if(glitchOn){
-      if(sliceTick++%2===0){
-        slices=[];const n=Math.floor(rand(5,11));let y=FIG.y0;
-        while(y<IMG_SIZE){const h=rand(6,40);slices.push({y,h,dx:Math.random()<.55?rand(-1,1)*S*0.035:0});y+=h;}
-      }
-      const k=S/IMG_SIZE;
-      pc.drawImage(img,0,0,IMG_SIZE,FIG.y0,0,0,S,FIG.y0*k);
+    if(glitch){
+      const k=sd/IMG_SIZE, top=Math.round(FIG.y0*k);
+      pc.drawImage(personFull,0,0,sd,top,pd,0,sd,top);
       for(const s of slices){
-        const h=Math.min(s.h,IMG_SIZE-s.y);
-        pc.drawImage(img,0,s.y,IMG_SIZE,h,s.dx,s.y*k,S,h*k);
+        const y=Math.round(s.y*k), h=Math.min(Math.round((s.y+s.h)*k),sd)-y;
+        if(h>0)pc.drawImage(personFull,0,y,sd,h,pd+Math.round(s.dx*D),y,sd,h);
       }
     }else{
-      pc.drawImage(img,0,0,S,S);
+      pc.drawImage(personFull,pd,0);
     }
-    pc.restore();
+    painted=glitch;
+  }
+
+  function updatePerson(t){
+    if(!fringe.length)return;
+    const breathe=1+0.008*Math.sin(t*(Math.PI*2/6));
+    const ox=smx*SC*0.006, oy=smy*SC*0.003;
+    pCanvas.style.transform=`translate(${ox.toFixed(2)}px,${oy.toFixed(2)}px) scale(${breathe.toFixed(4)})`;
+    if(glitchOn){
+      // fatias novas a cada 2 quadros; só aí a personagem é redesenhada
+      if(sliceTick++%2===0){
+        slices=[];let y=FIG.y0;
+        while(y<IMG_SIZE){const h=rand(6,40);slices.push({y,h,dx:Math.random()<.55?rand(-1,1)*SC*0.035:0});y+=h;}
+        paintPerson(true);
+      }
+    }else if(painted)paintPerson(false);
   }
 
   function updateGlitch(t){
@@ -454,38 +524,38 @@
     const t=now/1000, dt=Math.min(0.1,t-prevT||0);prevT=t;
     smx+=(mx-smx)*0.05;smy+=(my-smy)*0.05;
     updateGlitch(t);
-    drawBackground(t);
-    drawFX(t,dt);
-    drawPerson(t);
+    drawScene(t,dt);
+    updatePerson(t);
   }
 
-  /* ================= Cores aplicadas ao CSS ================= */
-  function applyColors(){
-    const C=CONFIG.colors;
-    document.documentElement.style.setProperty('--beam-a',rgba(C[0],.9));
-    document.documentElement.style.setProperty('--beam-b',rgba(C[3],.9));
+  function setQuality(q){
+    CONFIG.quality=QUALITY[q]?q:'medium';
+    document.body.classList.remove('q-high','q-medium','q-low');
+    document.body.classList.add('q-'+CONFIG.quality);
   }
 
   /* ================= Wallpaper Engine ================= */
   window.wallpaperPropertyListener={
     applyUserProperties(p){
-      let rebuild=false;
+      let rebuild=false, sized=false;
       ['color1','color2','color3','color4'].forEach((k,i)=>{
         if(p[k]){CONFIG.colors[i]=weColorToHex(p[k].value);rebuild=true;}
       });
       if(p.showclock)document.getElementById('clock').classList.toggle('hidden',!p.showclock.value);
       if(p.showsong)document.getElementById('song').classList.toggle('hidden',!p.showsong.value);
-      if(p.grain)grainEl.style.opacity=p.grain.value/100;
+      if(p.grain){CONFIG.grain=p.grain.value;makeGrain(CONFIG.grain/100);}
       if(p.glitch)CONFIG.glitch=p.glitch.value;
       if(p.mouse){CONFIG.mouse=p.mouse.value;if(!CONFIG.mouse){mx=0;my=0;}}
       if(p.fps)CONFIG.fps=Math.max(10,Math.min(60,p.fps.value));
-      if(rebuild){applyColors();build();}
+      if(p.quality){setQuality(p.quality.value);sized=true;}
+      if(sized)resize();else if(rebuild)build();
       window.__pendingProps=Object.assign(window.__pendingProps||{},p);
       if(window.applyPlayerProperties)window.applyPlayerProperties(p);
     }
   };
 
-  applyColors();
+  setQuality(CONFIG.quality);
+  makeGrain(CONFIG.grain/100);
   window.addEventListener('resize',resize);
   resize();
   img.onload=build;
@@ -796,13 +866,14 @@
     /* Lively chama livelyPropertyListener(nome, valor) para cada opção do
        LivelyProperties.json. Aqui o valor é convertido para o formato do
        Wallpaper Engine e reaproveita o mesmo código. */
-    const BOX=['bl','br','tr'];
+    const BOX=['bl','br','tr'], QUAL=['high','medium','low'];
     window.livelyPropertyListener=function(name,val){
       if(/^color[1-4]$/.test(name)&&typeof val==='string'){
         const n=parseInt(val.replace('#',''),16);
         val=[(n>>16)&255,(n>>8)&255,n&255].map(x=>(x/255).toFixed(4)).join(' ');
       }
       if(name==='boxposition'&&typeof val==='number')val=BOX[val]||'bl';
+      if(name==='quality'&&typeof val==='number')val=QUAL[val]||'medium';
       window.wallpaperPropertyListener.applyUserProperties({[name]:{value:val}});
     };
   })();
